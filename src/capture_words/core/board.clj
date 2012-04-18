@@ -14,9 +14,7 @@
   [up right down left]))
 
 (defn in-coll? [elem coll]
-  (or
-   (and (some #{elem} coll) true)
-   false))
+  (boolean (some #{elem} coll)))
 
 (defn adjacent? [[pair1 pair2]]
   (in-coll? pair1 (neighbors? pair2)))
