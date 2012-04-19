@@ -3,9 +3,13 @@
   (:use [clojure.math.numeric-tower :only (abs)])
   (:use [clojure.math.combinatorics :only (combinations)]))
 
+(defn tile []
+  (atom {:player nil
+         :letter nil}))
+
 (defn make-board [board-length board-width]
   (vec (for [x (range board-length)]
-         (vec (take board-width (repeat "_"))))))
+         (vec (take board-width (repeatedly tile))))))
 
 (defn neighbors? [[x y]]
   (let [up [x (+ y 1)]
