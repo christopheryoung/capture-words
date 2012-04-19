@@ -1,6 +1,7 @@
 
 (ns capture_words.core.board
-  (:use [clojure.math.numeric-tower :only (abs)]))
+  (:use [clojure.math.numeric-tower :only (abs)])
+  (:use [clojure.math.combinatorics :only (combinations)]))
 
 (defn make-board [board-length]
   (vec (for [x (range board-length)]
@@ -19,13 +20,16 @@
 (defn adjacent? [[pair1 pair2]]
   (in-coll? pair1 (neighbors? pair2)))
 
+(defn none-adjacent? [coll]
+  (not-any? adjacent? (combinations coll 2)))
+
 (defn init-board [ & {:keys [board-length fills]
                       :or {board-length 15
                            fills 4}}]
   (let [board (make-board board-length)
-        pre-filled-tiles (take fills (distinct (partition 2 (repeatedly #(rand-int board-length)))))
-        ]
-    ))
+        tiles (partition fills (distinct (partition 2 (repeatedly #(rand-int board-length)))))
+        non-adjacent-tiles (first (filter none-adjacent? tiles))
+        ]))
 
 (init-board)
               
