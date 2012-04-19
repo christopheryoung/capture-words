@@ -3,9 +3,9 @@
   (:use [clojure.math.numeric-tower :only (abs)])
   (:use [clojure.math.combinatorics :only (combinations)]))
 
-(defn make-board [board-length]
+(defn make-board [board-length board-width]
   (vec (for [x (range board-length)]
-         (vec (take board-length (repeat "_"))))))
+         (vec (take board-width (repeat "_"))))))
 
 (defn neighbors? [[x y]]
   (let [up [x (+ y 1)]
@@ -23,13 +23,22 @@
 (defn none-adjacent? [coll]
   (not-any? adjacent? (combinations coll 2)))
 
-(defn init-board [ & {:keys [board-length fills]
+(defn random-letter []
+  (rand-nth (map char (range (int \A) (int \Z)))))
+
+(defn random-tile-coordinates [board-length board-width]
+  "Lazy seq of random tile coordinates"
+  (repeatedly #(vector (rand-int board-length) (rand-int board-width))))
+
+(defn init-board [ & {:keys [board-length board-width pre-fills]
                       :or {board-length 15
-                           fills 4}}]
-  (let [board (make-board board-length)
-        tiles (partition fills (distinct (partition 2 (repeatedly #(rand-int board-length)))))
-        non-adjacent-tiles (first (filter none-adjacent? tiles))
-        ]))
+                           board-width 15
+                           pre-fills 4}}]
+  (let [board (make-board board-length board-width)
+        random-tile-groups (partition pre-fills (distinct (random-tile-coordinates board-length board-width)))
+        non-adjacent-random-tiles (first (filter none-adjacent? random-tile-groups))
+        ]
+    ))
 
 (init-board)
               
