@@ -9,6 +9,8 @@
   (is (adjacent? [[1 1] [2 1]]))
   (is (not (adjacent? [[1 1] [3 1]]))))
 
+
+
 (run-all-tests)
 
 
