@@ -4,12 +4,12 @@
   (:use [clojure.math.combinatorics :only (combinations)]))
 
 (defn tile []
-  (atom {:player nil
-         :letter nil}))
+  {:player nil
+   :letter nil})
 
 (defn make-board [board-length board-width]
-  (vec (for [x (range board-length)]
-         (vec (take board-width (repeatedly tile))))))
+  (atom (vec (for [x (range board-length)]
+         (vec (take board-width (repeatedly tile)))))))
 
 (defn neighbors? [[x y]]
   (let [up [x (+ y 1)]
@@ -34,6 +34,14 @@
   "Lazy seq of random tile coordinates"
   (repeatedly #(vector (rand-int board-length) (rand-int board-width))))
 
+(defn get-tile [board coordinates]
+  (get-in @board coordinates))
+
+(defn change-tile-value [board coordinates updates]
+  (let [old-tile (get-tile board coordinates)
+        new-tile (merge old-tile updates)]
+    (swap! board assoc-in coordinates new-tile)))
+
 (defn init-board [ & {:keys [board-length board-width pre-fills]
                       :or {board-length 15
                            board-width 15
@@ -42,10 +50,6 @@
         random-tile-groups (partition pre-fills (distinct (random-tile-coordinates board-length board-width)))
         non-adjacent-random-tiles (first (filter none-adjacent? random-tile-groups))
         ]
-    ))
+    board))
 
-(init-board)
-              
-
-
-
+(def board (init-board))
