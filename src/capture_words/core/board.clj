@@ -11,6 +11,14 @@
   (atom (vec (for [x (range board-length)]
          (vec (take board-width (repeatedly tile)))))))
 
+(defn legal-coordinates-for-board? [board]
+  "Returns a function that takes a set of coordinates and returns true
+  if they are legal on the board and false if they are not."
+  (fn [coordinates]
+    (try (get-in board coordinates)
+         true false)))
+
+;;TODO: Assumes that the returned positions are legal.
 (defn neighbors? [[x y]]
   (let [up [x (+ y 1)]
         right [(+ x 1) y]
