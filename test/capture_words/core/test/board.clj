@@ -24,8 +24,15 @@
   (is (= (neighbors? aboard [0 0] [5 5]) false)))
 
 (deftest test-change-tile-value
-  (let [changed-board (change-tile-value aboard [1 1] {:player :test-passer})]
+  (let [changed-board (change-tile-value aboard [[1 1] {:player :test-passer}])]
     (is (= ((get-tile changed-board [1 1]) :player) :test-passer))))
+
+(deftest test-change-tile-values
+  (let [changes [[[1 1] {:player :other-test-passer}]
+                 [[1 2] {:player :test-passer}]]
+        changed-board (change-tile-values aboard changes)]
+    (is (= ((get-tile changed-board [1 1]) :player) :other-test-passer))
+    (is (= ((get-tile changed-board [1 2]) :player) :test-passer))))
 
 (run-all-tests)
 
