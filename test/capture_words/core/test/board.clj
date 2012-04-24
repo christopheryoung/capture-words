@@ -3,15 +3,35 @@
   (:use [capture_words.core.board])
   (:use [clojure.test]))
 
-(defn test-board-init [board])
+;; Test set up and fixtures
 
-(def ^:dynamic aboard (make-board))
+(defn test-board-init [board]
+  (change-tile-values board [[[3 4] {:player :A :letter "C"}]
+                             [[3 5] {:player :A :letter "A"}]
+                             [[3 6] {:player :A :letter "T"}]
+                             [[4 4] {:player :A :letter "A"}]
+                             [[4 6] {:player :A :letter "O"}]
+                             [[4 7] {:player :A :letter "T"}]
+                             [[4 8] {:player :A :letter "T"}]
+                             [[4 9] {:player :A :letter "E"}]
+                             [[4 10] {:player :A :letter "R"}]
+                             [[5 4] {:player :A :letter "B"}]
+                             [[5 5] {:player :A :letter "O"}]
+                             [[5 6] {:player :A :letter "Y"}]
+                             [[6 3] {:player :A :letter "I"}]
+                             [[6 4] {:player :A :letter "S"}]
+                             ]))
 
 (defn board-fixture [f]
-  (binding [aboard (make-board)])
+  (def ^:dynamic aboard (make-board :init-func test-board-init))
   (f))
 
 (use-fixtures :each board-fixture)
+
+;; Tests
+
+(deftest test-fixtures
+  (is (= (get-in aboard [3 4 :letter]) "C")))
 
 (deftest test-neighbors-for-coordinates?
   (is (= (neighbors-for-coordinates aboard [0 0])
