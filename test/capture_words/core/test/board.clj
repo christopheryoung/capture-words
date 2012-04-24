@@ -3,9 +3,15 @@
   (:use [capture_words.core.board])
   (:use [clojure.test]))
 
+(defn test-board-init [board])
+
+(def ^:dynamic aboard (make-board))
+
 (defn board-fixture [f]
-  (binding [aboard (atom (make-board))])
+  (binding [aboard (make-board)])
   (f))
+
+(use-fixtures :each board-fixture)
 
 (deftest test-neighbors-for-coordinates?
   (is (= (neighbors-for-coordinates aboard [0 0])
