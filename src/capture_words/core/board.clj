@@ -3,10 +3,31 @@
   (:use [clojure.math.numeric-tower :only (abs)])
   (:use [clojure.math.combinatorics :only (combinations)]))
 
-;; General utility
+;; General utility (to be moved into separate library)
 
 (defn in-coll? [coll elem]
+  "Takes a collection and an element and returns true if the element
+appears at least once in the collection"
   (boolean (some #{elem} coll)))
+
+(defn exclusive-or [x y]
+  (boolean (and (not (and x y))
+                (or x y))))
+
+(defn all-same? [coll]
+  "Takes a collection and returns true if all the items in the
+collection are the same; false otherwise"
+  (= (count (set coll)) 1))
+
+(defn coll-of-successive-integers? [coll]
+  "Takes a collection of integers and returns true if the collection
+is a non-empty series of successive integers"
+  (let [start (first coll)
+        end (first (reverse coll))
+        length (count coll)]
+    (and (not (empty? coll))
+         (every? #(instance? java.lang.Long %) coll)
+         (= coll (range start (+ length 1))))))
 
 ;; The board and its pieces . . .
 
