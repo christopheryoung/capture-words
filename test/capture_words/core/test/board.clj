@@ -1,7 +1,8 @@
 
 (ns capture_words.core.test.board
   (:use [capture_words.core.board])
-  (:use [clojure.test]))
+  (:use [clojure.test])
+  (:use [midje.sweet]))
 
 ;; Test set up and fixtures
 
@@ -27,69 +28,61 @@
                              [[6 4] {:player :A :letter "S"}]
                              ]))
 
-(defn board-fixture [f]
-  (def ^:dynamic aboard (make-board :init-func test-board-init))
-  (f))
+(def aboard (make-board :init-func test-board-init))
 
-(use-fixtures :each board-fixture)
+(fact "We have sanity checked that our fixture is set up properly"
+  (at aboard [3 4] :letter) => "C")
 
 ;; Tests
 
-(deftest test-fixtures
-  (is (= (at aboard [3 4] :letter) "C")))
-
-(deftest test-neighbors-for-coordinates?
-  (testing "Coordinates returned by coordinates-of-neighboring are
+(facts "Coordinates returned by coordinates-of-neighboring are
   correct and possible for the provided board"
-    (is (= (set (coordinates-of-neighboring aboard [0 0]))
-           (set [[0 1] [1 0]])))
-    (is (= (set (coordinates-of-neighboring aboard [4 4]))
-       (set [[4 5] [5 4] [4 3] [3 4]])))))
+  (coordinates-of-neighboring aboard [0 0]) =>
+  (just [[0 1] [1 0]] :in-any-order)
+  (coordinates-of-neighboring aboard [4 4]) =>
+  (just [[4 5] [5 4] [4 3] [3 4]] :in-any-order))
 
-(deftest test-neighbors?
-  (is (= (neighbors? aboard [0 0] [0 1]) true))
-  (is (= (neighbors? aboard [0 0] [5 5]) false)))
+(facts "neighbors? works properly"
+  (neighbors? aboard [0 0] [0 1]) => true
+  (neighbors? aboard [0 0] [5 5]) => false)
 
-(deftest test-change-tile-value
+(fact "We can 'change' the value of a tile, i.e., get a board back
+with the new value in the correct place"
   (let [changed-board (change-tile-value aboard [[1 1] {:player :test-passer}])]
-    (is (= (at changed-board [1 1] :player) :test-passer))))
+    (at changed-board [1 1] :player) => :test-passer))
 
-(deftest test-change-tile-values
-  (let [changes [[[1 1] {:player :other-test-passer}]
-                 [[3 4] {:letter "Z"}]]
-        changed-board (change-tile-values aboard changes)]
-    (is (= (at changed-board [1 1] :player) :other-test-passer))
-    (is (= (at changed-board [3 4] :letter) "Z"))))
+(facts "We can 'change' multiple tile values at once"
+(let [changes [[[1 1] {:player :other-test-passer}]
+               [[3 4] {:letter "Z"}]]
+      changed-board (change-tile-values aboard changes)]
+  (at changed-board [1 1] :player) => :other-test-passer
+  (at changed-board [3 4] :letter) => "Z"))
 
-(deftest test-all-tile-coordinates
-  (is (= (count (all-tile-coordinates aboard)) 225)))
+(fact "We can get a coll of all the coordinates on a board in order"
+  (count (all-tile-coordinates aboard)) => 225)
 
-(deftest test-tile-directions
-  (testing "We can use the commands below to look up in the board
+(facts "We can use the commands below to look up in the board
   either with coordinates alone or with coordinates plus other
   attributes supplied."
-  (is (= ((above aboard [4 4]) :letter) "C"))
-  (is (= (above aboard [4 4] :letter) "C"))
-  (is (= (below aboard [4 4] :letter) "B"))
-  (is (= (left-of aboard [3 5] :letter) "C"))
-  (is (= (right-of aboard [3 4] :letter) "A"))))
+  ((above aboard [4 4]) :letter) => "C"
+  (above aboard [4 4] :letter) => "C"
+  (below aboard [4 4] :letter) => "B"
+  (left-of aboard [3 5] :letter) => "C"
+  (right-of aboard [3 4] :letter) => "A"
+  )
 
-(deftest test-letters-runs-from-coordinate
-  (testing "We get a collection of word/coordinate pairs for a particular coordinate on the board"
-    (let [word-candidates (letter-runs-from-coordinates aboard [3 4])
-          same-word-across-and-down (letter-runs-from-coordinates aboard [2 8])]
-      (is (in-coll? word-candidates ["CAT" [[3 4] [3 5] [3 6]]]))
-      (is (in-coll?  word-candidates ["CABS" [[3 4] [4 4] [5 4] [6 4]]]))
-      ;; [2 8] has CAT running across and down
-      (is (= (count same-word-across-and-down) 2))
-      (is (= (first (first same-word-across-and-down)) "CAT"))
-      (is (= (first (second same-word-across-and-down)) "CAT"))
-      )))
+(facts "We get a collection of word/coordinate pairs for a particular
+  coordinate on the board. Note that [2 8] has CAT running both across and
+  down."
+  (let [word-candidates (letter-runs-from-coordinates aboard [3 4])
+        same-word-across-and-down (letter-runs-from-coordinates aboard [2 8])]
+    (in-coll? word-candidates ["CAT" [[3 4] [3 5] [3 6]]]) => true
+    (in-coll?  word-candidates ["CABS" [[3 4] [4 4] [5 4] [6 4]]]) => true
+    (count same-word-across-and-down) => 2
+    (first (first same-word-across-and-down)) => "CAT"
+    (first (second same-word-across-and-down)) => "CAT"))
 
-(deftest test-all-letter-runs-on-board
-  (testing "We can use letter-runs-from-coordinates to traverse the
+(fact "We can use letter-runs-from-coordinates to traverse the
   entire board, collecting all potential words"
-    (let [possible-words (all-letter-runs-on-board theboard)]
-      (is (= (count possible-words) 8)))))
-
-(run-all-tests)
+  (let [possible-words (all-letter-runs-on-board theboard)]
+    (count possible-words) => 8))
