@@ -94,26 +94,6 @@ coordinates."
 
 ;; Working with letters on tiles
 
-(def theboard (change-tile-values (make-board) [[[2 8] {:player :A :letter "C"}]
-                                                [[2 9] {:player :A :letter "A"}]
-                                                [[2 10] {:player :A :letter "T"}]
-                                                [[3 4] {:player :A :letter "C"}]
-                                                [[3 5] {:player :A :letter "A"}]
-                                                [[3 6] {:player :A :letter "T"}]
-                                                [[3 8] {:player :A :letter "A"}]
-                                                [[4 4] {:player :A :letter "A"}]
-                                                [[4 6] {:player :A :letter "O"}]
-                                                [[4 7] {:player :A :letter "T"}]
-                                                [[4 8] {:player :A :letter "T"}]
-                                                [[4 9] {:player :A :letter "E"}]
-                                                [[4 10] {:player :A :letter "R"}]
-                                                [[5 4] {:player :A :letter "B"}]
-                                                [[5 5] {:player :A :letter "O"}]
-                                                [[5 6] {:player :A :letter "Y"}]
-                                                [[6 3] {:player :A :letter "I"}]
-                                                [[6 4] {:player :A :letter "S"}]
-                                                ]))
-
 (defn word-starting [direction]
   (fn [board coordinates]
     (let [coordinates-in-direction (direction board coordinates)
