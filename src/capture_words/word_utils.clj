@@ -1,5 +1,5 @@
 
-(ns capture_words.word_utils.core
+(ns capture_words.word_utils
   (:require [clojure.string :as string]
             [clojure.java.io :as io]))
 
@@ -39,7 +39,7 @@
   (with-open [rdr (clojure.java.io/reader file-name)]
     (reduce upper-case-and-conj [] (line-seq rdr))))
 
-(def all-words (get-all-words "src/capture_words/word_utils/dicts/english.txt"))
+(def all-words (get-all-words "src/capture_words/dicts/english.txt"))
 
 (defn- select-random-letter []
   "For now, just selects a random letter. Later, should provide

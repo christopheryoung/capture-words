@@ -1,7 +1,8 @@
 
-(ns capture_words.core.board
+(ns capture_words.board
   (:use [clojure.math.numeric-tower :only (abs)])
-  (:use [clojure.math.combinatorics :only (combinations)]))
+  (:use [clojure.math.combinatorics :only (combinations)])
+  (:use [capture_words.word_utils :only (word?)]))
 
 ;; General utility (to be moved into separate library)
 
@@ -26,7 +27,6 @@ is a non-empty series of successive integers"
         end (first (reverse coll))
         length (count coll)]
     (and (not (empty? coll))
-         (every? #(instance? java.lang.Long %) coll)
          (= coll (range start (+ length 1))))))
 
 ;; The board and its pieces . . .
@@ -101,6 +101,17 @@ neighbors for those coordinates on the given board."
 depending on whether the coordinate pairs are neighbors on the board."
   (in-coll? (coordinates-of-neighboring board pair2) pair1))
 
+(defn coordinates-all-in-a-row? [coordinates-vec]
+  (let [xs (sort (map first coordinates-vec))
+        ys (sort (map second coordinates-vec))]
+    (sequential? xs)
+    ;;(and (sequential? xs) (all-same? ys))
+    ;; (or (and (sequential? xs) (all-same? ys))
+    ;;     (and (sequential? ys (all-same? xs))))
+    ))
+
+(coordinates-all-in-a-row? [[1 1] [1 2] [1 3]])
+
 ;; "Changing" tile values
 
 (defn change-tile-value [board [coordinates updates]]
@@ -165,4 +176,50 @@ coordinates."
 
 (defn board-all-words? [board]
   "Does the given board consist entirely of words (or are there illegal groupings of characters?"
+  (let [candidates (map first (all-letter-runs-on-board board))]
+    candidates))
+
+(defn has-neighbor-with-letter? [board coordinates]
+  (let [letters-in-neighboring (filter #(not (nil? %))
+                                       (map #(at board coordinates :letter)
+                                            (coordinates-of-neighboring board coordinates)))]
+    ((not (empty? letters-in-neighboring))))
   )
+
+(defn possible-move? [board changes]
+  "Takes a board and proposed changes, which are a list of
+ coordinate/attributes pairs. Returns true or false.
+
+Here, we are only checking:
+
+1. Do the changes place letters in a legal location? For this check,
+we apply three rules: a) If there are no letters on the board, the
+letters can be played anywhere. Otherwise, they must be attached to
+letters already on the board. b) Letters cannot be placed on top of
+tiles that already have letters. c) Letters must be played in a
+straight line.
+
+2. As a result of the change, are all the letter-combinations on the
+board actual words?
+
+Note: This function does not check the validity of the move. So, we
+are NOT checking here to ensure that i) it is the player's turn ii)
+the player is submitting a move on her own behalf; iii) that the
+changes are possible for the player, i.e., that she actually has the
+letters available to her to play on the board. These checks are done
+elsewhere."
+  ;; (let [has-letter? (fn [coordinates] (if (at board coordinates :letter) coordinates))
+  ;;       coordinates-of-letters-already-on-board (filter has-letter? (all-tile-coordinates board))
+  ;;       board-after-move (change-tile-values board changes)
+        
+  ;;       coordinates-of-letters-after-move (filter has-letter? (all-tile-coordinates board-after-move))
+  ;;       isolated-letters-after-move (filter has-neighbor-with-letter? (coordinates-of-letters-after-move))
+  ;;       word-candidates-after-move (map )
+  ;;       ]
+  ;;   (and
+  ;;    (or (empty? coordinates-of-letters-already-on-board) (empty? isolated-letters-after-move))
+  ;;    ())
+  ;;   )
+  )
+
+(defn score-move [board changes])
