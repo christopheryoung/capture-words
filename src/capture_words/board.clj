@@ -104,13 +104,8 @@ depending on whether the coordinate pairs are neighbors on the board."
 (defn coordinates-all-in-a-row? [coordinates-vec]
   (let [xs (sort (map first coordinates-vec))
         ys (sort (map second coordinates-vec))]
-    (sequential? xs)
-    ;;(and (sequential? xs) (all-same? ys))
-    ;; (or (and (sequential? xs) (all-same? ys))
-    ;;     (and (sequential? ys (all-same? xs))))
-    ))
-
-(coordinates-all-in-a-row? [[1 1] [1 2] [1 3]])
+    (or (and (coll-of-successive-integers? xs) (all-same? ys))
+        (and (coll-of-successive-integers? ys) (all-same? xs)))))
 
 ;; "Changing" tile values
 

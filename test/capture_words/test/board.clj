@@ -48,10 +48,9 @@
 
 (facts "coordinates-all-in-a-row? returns true or false correctly"
   (coordinates-all-in-a-row? [[1 1] [1 2] [1 3] [1 4]]) => true
-  ;; (coordinates-all-in-a-row? [[1 1] [1 2] [1 3] [1 5]]) => false
-  ;; (coordinates-all-in-a-row? [[1 1] [2 1] [3 1] [4 1]]) => true
-  ;; (coordinates-all-in-a-row? [[1 1] [2 2] [3 3] [4 4]]) => false
-  )
+  (coordinates-all-in-a-row? [[1 1] [1 2] [1 3] [1 5]]) => false
+  (coordinates-all-in-a-row? [[1 1] [2 1] [3 1] [4 1]]) => true
+  (coordinates-all-in-a-row? [[1 1] [2 2] [3 3] [4 4]]) => false)
 
 (fact "We can 'change' the value of a tile, i.e., get a board back
 with the new value in the correct place"
