@@ -46,6 +46,11 @@
   (neighbors? aboard [0 0] [0 1]) => true
   (neighbors? aboard [0 0] [5 5]) => false)
 
+(facts "has-neighbor-with-letter? works properly"
+  (let [board-with-isolated-tile (change-tile-value aboard [[0 0] {:letter "Q"}])]
+    (has-neighbor-with-letter? aboard [0 0]) => false
+    (has-neighbor-with-letter? aboard [3 4]) => true))
+
 (facts "coordinates-all-in-a-row? returns true or false correctly"
   (coordinates-all-in-a-row? [[1 1] [1 2] [1 3] [1 4]]) => true
   (coordinates-all-in-a-row? [[1 1] [1 2] [1 3] [1 5]]) => false

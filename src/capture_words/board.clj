@@ -170,16 +170,15 @@ coordinates."
     (filter #(not (empty? %)) all-letter-runs)))
 
 (defn board-all-words? [board]
-  "Does the given board consist entirely of words (or are there illegal groupings of characters?"
+  "Does the given board consist entirely of words (or are there illegal
+groupings of characters?"
   (let [candidates (map first (all-letter-runs-on-board board))]
     candidates))
 
 (defn has-neighbor-with-letter? [board coordinates]
-  (let [letters-in-neighboring (filter #(not (nil? %))
-                                       (map #(at board coordinates :letter)
-                                            (coordinates-of-neighboring board coordinates)))]
-    ((not (empty? letters-in-neighboring))))
-  )
+  (let [letters-in-neighboring (filter #(not (nil? %)) (map #(at board % :letter)
+                                                            (coordinates-of-neighboring board coordinates)))]
+    (not (empty? letters-in-neighboring))))
 
 (defn possible-move? [board changes]
   "Takes a board and proposed changes, which are a list of
