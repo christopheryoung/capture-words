@@ -1,1 +1,8 @@
-/.lein-failures
+.lein-failures
+.lein-deps-sum
+.DS_Store
+/lib/
+/classes/
+pom.xml
+*jar
+/docs/
