@@ -26,6 +26,10 @@
                              [[5 6] {:player :A :letter "Y"}]
                              [[6 3] {:player :A :letter "I"}]
                              [[6 4] {:player :A :letter "S"}]
+                             [[7 4] {:player :A :letter "T"}]
+                             [[8 4] {:player :A :letter "A"}]
+                             [[9 4] {:player :A :letter "N"}]
+                             [[10 4] {:player :A :letter "D"}]
                              ]))
 
 (def aboard (make-board :init-func test-board-init))
@@ -45,11 +49,6 @@
 (facts "neighbors? works properly"
   (neighbors? aboard [0 0] [0 1]) => true
   (neighbors? aboard [0 0] [5 5]) => false)
-
-(facts "has-neighbor-with-letter? works properly"
-  (let [board-with-isolated-tile (change-tile-value aboard [[0 0] {:letter "Q"}])]
-    (has-neighbor-with-letter? aboard [0 0]) => false
-    (has-neighbor-with-letter? aboard [3 4]) => true))
 
 (facts "coordinates-all-in-a-row? returns true or false correctly"
   (coordinates-all-in-a-row? [[1 1] [1 2] [1 3] [1 4]]) => true
@@ -79,8 +78,7 @@ with the new value in the correct place"
   (above aboard [4 4] :letter) => "C"
   (below aboard [4 4] :letter) => "B"
   (left-of aboard [3 5] :letter) => "C"
-  (right-of aboard [3 4] :letter) => "A"
-  )
+  (right-of aboard [3 4] :letter) => "A")
 
 (facts "We get a collection of word/coordinate pairs for a particular
   coordinate on the board. Note that [2 8] has CAT running both across and
@@ -88,7 +86,7 @@ with the new value in the correct place"
   (let [word-candidates (letter-runs-from-coordinates aboard [3 4])
         same-word-across-and-down (letter-runs-from-coordinates aboard [2 8])]
     (in-coll? word-candidates ["CAT" [[3 4] [3 5] [3 6]]]) => true
-    (in-coll?  word-candidates ["CABS" [[3 4] [4 4] [5 4] [6 4]]]) => true
+    (in-coll?  word-candidates ["CABSTAND" [[3 4] [4 4] [5 4] [6 4] [7 4] [8 4] [9 4] [10 4]]]) => true
     (count same-word-across-and-down) => 2
     (first (first same-word-across-and-down)) => "CAT"
     (first (second same-word-across-and-down)) => "CAT"))
@@ -98,3 +96,34 @@ with the new value in the correct place"
   (let [possible-words (all-letter-runs-on-board theboard)]
     (count possible-words) => 8))
 
+(facts "possible-move? checks that words must be played by attaching them to
+already existing words on the board."
+  (let [bad-move-because-not-attached [[[0 0] {:letter "C"}]
+                                       [[0 1] {:letter "A"}]
+                                       [[0 2] {:letter "T"}]]
+        ok-move [[[0 10] {:letter "C"}]
+                 [[1 10] {:letter "A"}]]]
+    (possible-move? aboard bad-move-because-not-attached) => false
+    (possible-move? aboard ok-move) => true))
+
+(fact "possible-move? checks that words must be played in a straight horizontal
+or vertical line"
+  (let [bad-move-because-willy-nilly [[[0 0] {:letter "C"}]
+                                      [[0 5] {:letter "A"}]
+                                      [[0 10] {:letter "T"}]]]
+    (possible-move? aboard bad-move-because-willy-nilly) => false))
+
+(facts "possible-move? checks that letters cannot be played on top of tiles that
+already have letters"
+  (let [bad-move-because-squash [[[4 10] {:letter "R"}] ;; already has letter
+                                 [[5 10] {:letter "A"}]
+                                 [[6 10] {:letter "T"}]]
+        ok-move (rest bad-move-because-squash)]
+    (possible-move? aboard bad-move-because-squash) => false
+    (possible-move? aboard ok-move) => true))
+
+(fact "possible-move? checks that a word is an actual word"
+  (let [bad-move-because-nonsense [[[5 10] {:letter "Z"}]
+                                   [[6 10] {:letter "B"}]
+                                   [[7 10] {:letter "G"}]]]
+    (possible-move? aboard bad-move-because-nonsense) => false))

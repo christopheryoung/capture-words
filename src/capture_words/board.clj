@@ -2,6 +2,7 @@
 (ns capture_words.board
   (:use [clojure.math.numeric-tower :only (abs)])
   (:use [clojure.math.combinatorics :only (combinations)])
+  (:use [clojure.set :only (intersection union difference)])
   (:use [capture_words.word_utils :only (word?)]))
 
 ;; General utility (to be moved into separate library)
@@ -21,13 +22,13 @@ collection are the same; false otherwise"
   (= (count (set coll)) 1))
 
 (defn coll-of-successive-integers? [coll]
-  "Takes a collection of integers and returns true if the collection
-is a non-empty series of successive integers"
+  "Takes a non-empty collection of integers and returns true if the collection
+is a series of successive integers"
   (let [start (first coll)
         end (first (reverse coll))
-        length (count coll)]
-    (and (not (empty? coll))
-         (= coll (range start (+ length 1))))))
+        length (count coll)
+        target-coll (range start (+ length start))]
+    (= coll target-coll)))
 
 ;; The board and its pieces . . .
 
@@ -169,16 +170,30 @@ coordinates."
         all-letter-runs (mapcat #(letter-runs-from-coordinates board %) coordinates-to-search)]
     (filter #(not (empty? %)) all-letter-runs)))
 
-(defn board-all-words? [board]
+(defn illegal-words-on-board [board]
   "Does the given board consist entirely of words (or are there illegal
 groupings of characters?"
   (let [candidates (map first (all-letter-runs-on-board board))]
-    candidates))
+    (filter #(not (word? %)) candidates)))
 
-(defn has-neighbor-with-letter? [board coordinates]
-  (let [letters-in-neighboring (filter #(not (nil? %)) (map #(at board % :letter)
-                                                            (coordinates-of-neighboring board coordinates)))]
-    (not (empty? letters-in-neighboring))))
+(defn- all-letters-connected-recur? [board collector remaining-letter-runs]
+  "Recursive function used internally by all-letters-connected."
+  (let [neighbor-coordinates-groups (map #(coordinates-of-neighboring board %) collector)
+        neighbor-coordinates (set (apply concat neighbor-coordinates-groups))
+        neighbors-in-remaining (intersection (set remaining-letter-runs) neighbor-coordinates)
+        new-collector (union collector neighbors-in-remaining)
+        new-remaining (difference remaining-letter-runs neighbors-in-remaining)
+        ]
+    (cond
+     (empty? remaining-letter-runs) true
+     (empty? neighbors-in-remaining) false
+     :else (all-letters-connected-recur? board new-collector new-remaining))))
+
+(defn all-letters-connected? [board coordinates]
+  "Takes a set of coordinates and returns true if they're all connected."
+  (let [collector (set (first coordinates))
+        remaining (set (apply concat (rest coordinates)))]
+    (all-letters-connected-recur? board collector remaining)))
 
 (defn possible-move? [board changes]
   "Takes a board and proposed changes, which are a list of
@@ -186,11 +201,11 @@ groupings of characters?"
 
 Here, we are only checking:
 
-1. Do the changes place letters in a legal location? For this check,
-we apply three rules: a) If there are no letters on the board, the
-letters can be played anywhere. Otherwise, they must be attached to
-letters already on the board. b) Letters cannot be placed on top of
-tiles that already have letters. c) Letters must be played in a
+1. Do the changes place letters in a legal location? For this check, we apply
+three rules: If there are no letters on the board, the letters can be played
+anywhere. Otherwise, they must be attached to letters already on the board. (We
+only need to actually check the latter, of course.) b) Letters cannot be placed
+on top of tiles that already have letters. c) Letters must be played in a
 straight line.
 
 2. As a result of the change, are all the letter-combinations on the
@@ -202,18 +217,18 @@ the player is submitting a move on her own behalf; iii) that the
 changes are possible for the player, i.e., that she actually has the
 letters available to her to play on the board. These checks are done
 elsewhere."
-  ;; (let [has-letter? (fn [coordinates] (if (at board coordinates :letter) coordinates))
-  ;;       coordinates-of-letters-already-on-board (filter has-letter? (all-tile-coordinates board))
-  ;;       board-after-move (change-tile-values board changes)
-        
-  ;;       coordinates-of-letters-after-move (filter has-letter? (all-tile-coordinates board-after-move))
-  ;;       isolated-letters-after-move (filter has-neighbor-with-letter? (coordinates-of-letters-after-move))
-  ;;       word-candidates-after-move (map )
-  ;;       ]
-  ;;   (and
-  ;;    (or (empty? coordinates-of-letters-already-on-board) (empty? isolated-letters-after-move))
-  ;;    ())
-  ;;   )
-  )
-
-(defn score-move [board changes])
+  (let [change-coordinates (map first changes)
+        coordinates-of-letters-already-on-board (filter #(at board % :letter) (all-tile-coordinates board))
+        overlapping-letters (intersection
+                             (set change-coordinates)
+                             (set coordinates-of-letters-already-on-board))
+        board-after-move (change-tile-values board changes)
+        all-letter-runs-after-move (all-letter-runs-on-board board-after-move)
+        coordinates-of-all-letter-runs-after-move (map second all-letter-runs-after-move)
+        illegal-words-after-move (illegal-words-on-board board-after-move)
+        ]
+    (and
+     (coordinates-all-in-a-row? change-coordinates)
+     (all-letters-connected? board-after-move coordinates-of-all-letter-runs-after-move)
+     (empty? overlapping-letters)
+     (empty? illegal-words-after-move))))
