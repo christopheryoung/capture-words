@@ -102,28 +102,38 @@ already existing words on the board."
                                        [[0 1] {:letter "A"}]
                                        [[0 2] {:letter "T"}]]
         ok-move [[[0 10] {:letter "C"}]
-                 [[1 10] {:letter "A"}]]]
-    (possible-move? aboard bad-move-because-not-attached) => false
-    (possible-move? aboard ok-move) => true))
+                 [[1 10] {:letter "A"}]]
+        bad-move-answer (possible-move? aboard bad-move-because-not-attached)
+        good-move-answer (possible-move? aboard ok-move)]
+    (bad-move-answer :status) => :failure
+    ((first (bad-move-answer :reason)) :type) => :disconnected
+    (good-move-answer :status) => :success))
 
 (fact "possible-move? checks that words must be played in a straight horizontal
 or vertical line"
   (let [bad-move-because-willy-nilly [[[0 0] {:letter "C"}]
                                       [[0 5] {:letter "A"}]
-                                      [[0 10] {:letter "T"}]]]
-    (possible-move? aboard bad-move-because-willy-nilly) => false))
+                                      [[0 10] {:letter "T"}]]
+        willy-nilly (possible-move? aboard bad-move-because-willy-nilly)]
+    (willy-nilly :status) => :failure
+    ((first (willy-nilly :reason)) :type) => :non-contiguous))
 
 (facts "possible-move? checks that letters cannot be played on top of tiles that
 already have letters"
   (let [bad-move-because-squash [[[4 10] {:letter "R"}] ;; already has letter
                                  [[5 10] {:letter "A"}]
                                  [[6 10] {:letter "T"}]]
-        ok-move (rest bad-move-because-squash)]
-    (possible-move? aboard bad-move-because-squash) => false
-    (possible-move? aboard ok-move) => true))
+        ok-move (rest bad-move-because-squash)
+        bad-answer (possible-move? aboard bad-move-because-squash)
+        good-answer (possible-move? aboard ok-move)]
+    (bad-answer :status) => :failure
+    ((first (bad-answer :reason)) :type) => :overlapping
+    (good-answer :status) => :success))
 
-(fact "possible-move? checks that a word is an actual word"
+(facts "possible-move? checks that a word is an actual word"
   (let [bad-move-because-nonsense [[[5 10] {:letter "Z"}]
                                    [[6 10] {:letter "B"}]
-                                   [[7 10] {:letter "G"}]]]
-    (possible-move? aboard bad-move-because-nonsense) => false))
+                                   [[7 10] {:letter "G"}]]
+        answer (possible-move? aboard bad-move-because-nonsense)]
+    (answer :status) => :failure
+    ((first (answer :reason)) :type) => :not-word))
