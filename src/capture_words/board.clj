@@ -7,14 +7,21 @@
 
 ;; General utility (to be moved into separate library)
 
-(defn in-coll? [coll elem]
-  "Takes a collection and an element and returns true if the element
-appears at least once in the collection"
-  (boolean (some #{elem} coll)))
+;; logical relations
 
 (defn exclusive-or [x y]
   (boolean (and (not (and x y))
                 (or x y))))
+
+(defn strictly-true-or-false? [exp]
+  (or (true? exp) (false? exp)))
+
+;; collections
+
+(defn in-coll? [coll elem]
+  "Takes a collection and an element and returns true if the element
+appears at least once in the collection"
+  (boolean (some #{elem} coll)))
 
 (defn all-same? [coll]
   "Takes a collection and returns true if all the items in the
@@ -29,6 +36,25 @@ is a series of successive integers"
         length (count coll)
         target-coll (range start (+ length start))]
     (= coll target-coll)))
+
+(defn summarize-check-results [& check-and-error-message-pairs]
+  "Takes a sequence of checks and error messages, where the check is the
+condition to be tested which evaluates to either true or false and the error
+message provides the message to be returned in the case that the check returns
+false. Throws error if any of the checks evaluate to neither strictly true or
+false.
+
+Note: There has to be a better way to do this."
+  (let [checks (take-nth 2 check-and-error-message-pairs)
+        possible-error-messages (take-nth 2 (rest check-and-error-message-pairs))
+        reporter (fn [[x y]] (false? x))
+        error-messages (map second (filter reporter (partition 2 check-and-error-message-pairs)))
+        ]
+    (if-not (every? strictly-true-or-false? checks)
+      (throw (Exception. "All checks must evaluate to either strictly true or false.")))
+    (if
+        (empty? error-messages) {:status :success}
+        {:status :failure :reason error-messages})))
 
 ;; The board and its pieces . . .
 
@@ -122,6 +148,30 @@ coordinates."
 
 ;; Working with letters on tiles
 
+(def theboard (change-tile-values (make-board) [[[2 8] {:player :A :letter "C"}]
+                                                [[2 9] {:player :A :letter "A"}]
+                                                [[2 10] {:player :A :letter "T"}]
+                                                [[3 4] {:player :A :letter "C"}]
+                                                [[3 5] {:player :A :letter "A"}]
+                                                [[3 6] {:player :A :letter "T"}]
+                                                [[3 8] {:player :A :letter "A"}]
+                                                [[4 4] {:player :A :letter "A"}]
+                                                [[4 6] {:player :A :letter "O"}]
+                                                [[4 7] {:player :A :letter "T"}]
+                                                [[4 8] {:player :A :letter "T"}]
+                                                [[4 9] {:player :A :letter "E"}]
+                                                [[4 10] {:player :A :letter "R"}]
+                                                [[5 4] {:player :A :letter "B"}]
+                                                [[5 5] {:player :A :letter "O"}]
+                                                [[5 6] {:player :A :letter "Y"}]
+                                                [[6 3] {:player :A :letter "I"}]
+                                                [[6 4] {:player :A :letter "S"}]
+                                                [[7 4] {:player :A :letter "T"}]
+                                                [[8 4] {:player :A :letter "A"}]
+                                                [[9 4] {:player :A :letter "N"}]
+                                                [[10 4] {:player :A :letter "D"}]
+                                                ]))
+
 (defn word-starting [direction]
   (fn [board coordinates]
     (let [coordinates-in-direction (direction board coordinates)
@@ -197,7 +247,10 @@ groupings of characters?"
 
 (defn possible-move? [board changes]
   "Takes a board and proposed changes, which are a list of
- coordinate/attributes pairs. Returns true or false.
+ coordinate/attributes pairs. Returns a map of results, which is either:
+
+a) {:result :success}; or
+b) {:result :error :explanation <some explanation>}
 
 Here, we are only checking:
 
@@ -226,9 +279,14 @@ elsewhere."
         all-letter-runs-after-move (all-letter-runs-on-board board-after-move)
         coordinates-of-all-letter-runs-after-move (map second all-letter-runs-after-move)
         illegal-words-after-move (illegal-words-on-board board-after-move)
+        letters-connected (all-letters-connected?
+                           board-after-move
+                           coordinates-of-all-letter-runs-after-move)
         ]
-    (and
-     (coordinates-all-in-a-row? change-coordinates)
-     (all-letters-connected? board-after-move coordinates-of-all-letter-runs-after-move)
-     (empty? overlapping-letters)
-     (empty? illegal-words-after-move))))
+
+    (summarize-check-results
+     (empty? overlapping-letters) {:type :overlapping}
+     (coordinates-all-in-a-row? change-coordinates) {:type :non-contiguous}
+     letters-connected {:type :disconnected}
+     (empty? illegal-words-after-move) {:type :not-word
+                                        :explanation illegal-words-after-move})))
