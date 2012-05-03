@@ -93,7 +93,7 @@ with the new value in the correct place"
 
 (fact "We can use letter-runs-from-coordinates to traverse the
   entire board, collecting all potential words"
-  (let [possible-words (all-letter-runs-on-board theboard)]
+  (let [possible-words (all-letter-runs-on-board aboard)]
     (count possible-words) => 8))
 
 (facts "possible-move? checks that words must be played by attaching them to
