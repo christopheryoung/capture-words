@@ -82,13 +82,13 @@ Note: There has to be a better way to do this."
 
 ;; Locating on the board . . .
 
-(defn coord-above [[x y]] [(- x 1) y])
+(defn coord-above [[x y]] [(dec x) y])
 
-(defn coord-right-of [[x y]] [x (+ y 1)])
+(defn coord-right-of [[x y]] [x (inc y)])
 
-(defn coord-below [[x y]] [(+ x 1) y])
+(defn coord-below [[x y]] [(inc x ) y])
 
-(defn coord-left-of [[x y]] [x (- y 1)])
+(defn coord-left-of [[x y]] [x (dec y)])
 
 (defn loc [rule]
   (fn [board coordinates & attrs]
@@ -110,7 +110,7 @@ Note: There has to be a better way to do this."
   (for [y (range y (count (first board)))] [x y]))
 
 (defn to-the-bottom-from [board [x y]]
-  (for [x (range x (+ (count board) 1))] [x y]))
+  (for [x (range x (inc (count board)))] [x y]))
 
 (defn legal-coordinate [board coordinates]
   (or (get-in board coordinates) false))
