@@ -39,7 +39,7 @@
   (with-open [rdr (clojure.java.io/reader file-name)]
     (reduce upper-case-and-conj [] (line-seq rdr))))
 
-(def all-words (get-all-words "src/capture_words/dicts/english.txt"))
+(def all-words (future (get-all-words "src/capture_words/dicts/english.txt")))
 
 (defn- select-random-letter []
   "For now, just selects a random letter. Later, should provide
@@ -55,4 +55,4 @@ letters in frequences observed in the language."
   "Inefficient stub for a func that takes a word and returns true or
   false depending on whether it is a word"
   (let [upper-word (string/upper-case word)]
-    (boolean (some #{upper-word} all-words))))
+    (boolean (some #{upper-word} @all-words))))
