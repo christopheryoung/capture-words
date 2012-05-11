@@ -37,24 +37,26 @@ is a series of successive integers"
         target-coll (range start (+ length start))]
     (= coll target-coll)))
 
-(defn summarize-check-results [& check-and-error-message-pairs]
-  "Takes a sequence of checks and error messages, where the check is the
-condition to be tested which evaluates to either true or false and the error
-message provides the message to be returned in the case that the check returns
-false. Throws error if any of the checks evaluate to neither strictly true or
-false.
+(defn throw-if-false [status excp]
+  (if-not (strictly-true-or-false? status)
+    (throw (Exception.
+            (format "A status must evaluate to either strictly true or false,
+            but status provided was: %s" status))))
+  (if-not status
+    (throw excp)))
 
-Note: There has to be a better way to do this."
-  (let [checks (take-nth 2 check-and-error-message-pairs)
-        possible-error-messages (take-nth 2 (rest check-and-error-message-pairs))
-        reporter (fn [[x y]] (false? x))
-        error-messages (map second (filter reporter (partition 2 check-and-error-message-pairs)))
-        ]
-    (if-not (every? strictly-true-or-false? checks)
-      (throw (Exception. "All checks must evaluate to either strictly true or false.")))
-    (if
-        (empty? error-messages) {:status :success}
-        {:status :failure :reason error-messages})))
+(defn summarize-check-results [ & check-and-exception-pairs]
+  "Takes alternating checks and exceptions, where the check is the condition to
+be tested which evaluates to either true or false and the exception is what is
+returned in the case that the check returns false. Only throws the first
+exception encountered. Throws exception if any of the checks evaluate to
+neither strictly true or false."
+  (if (seq check-and-exception-pairs)
+    (let [status (first check-and-exception-pairs)
+          excp (second check-and-exception-pairs)]
+      (throw-if-false status excp)
+      (recur (nnext check-and-exception-pairs)))))
+
 
 ;; The board and its pieces . . .
 
@@ -261,8 +263,7 @@ elsewhere."
         ]
 
     (summarize-check-results
-     (empty? overlapping-letters) {:type :overlapping}
-     (coordinates-all-in-a-row? change-coordinates) {:type :non-contiguous}
-     letters-connected {:type :disconnected}
-     (empty? illegal-words-after-move) {:type :not-word
-                                        :explanation illegal-words-after-move})))
+     (empty? overlapping-letters) (Exception. "Letters overlap")
+     (coordinates-all-in-a-row? change-coordinates) (Exception. "Letters are non-contiguous")
+     letters-connected (Exception. "Letters are disconnected")
+     (empty? illegal-words-after-move) (Exception. "Not a word"))))
