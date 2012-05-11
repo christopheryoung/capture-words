@@ -225,10 +225,8 @@ groupings of characters?"
 
 (defn possible-move? [board changes]
   "Takes a board and proposed changes, which are a list of
- coordinate/attributes pairs. Returns a map of results, which is either:
-
-a) {:result :success}; or
-b) {:result :error :explanation <some explanation>}
+ coordinate/attributes pairs. Returns nil on success or throws an Exception if
+ the move is illegal:
 
 Here, we are only checking:
 
