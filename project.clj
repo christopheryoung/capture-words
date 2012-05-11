@@ -2,6 +2,6 @@
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [org.clojure/math.numeric-tower "0.0.1"]
                  [org.clojure/math.combinatorics "0.0.2"]]
-  :profiles {:dev {:dependencies [[midje "1.4.0-RC1"]]}}
+  :profiles {:dev {:dependencies [[midje "1.4.0"]]}}
   :min-lein-version "2.0.0"
   :description "A simple word game.")
