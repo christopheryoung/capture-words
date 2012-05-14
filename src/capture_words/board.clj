@@ -125,6 +125,12 @@ neighbors for those coordinates on the given board."
                                        (coord-below coordinates)
                                        (coord-left-of coordinates)]))
 
+(defn coordinates-of-neighborings [board coordinates-vec]
+  "Takes a vector of coordinates and gives all the legal neighbors, including
+the original coordinates"
+  (let [neighbors-for-each (map (partial coordinates-of-neighboring board) coordinates-vec)]
+    (reduce concat [] neighbors-for-each)))
+
 (defn neighbors? [board pair1 pair2]
   "Takes a board and two coordinate pairs and returns true or false
 depending on whether the coordinate pairs are neighbors on the board."
@@ -147,6 +153,12 @@ coordinates."
 
 (defn change-tile-values [board changes]
   (reduce change-tile-value board changes))
+
+(defn- changes-for-coordinates [coordinate-sets change]
+  "change-tile-value expects a sequence of coordinates and updates. This helper
+  method takes a set of such coordinates and a single change and returns the
+  changes in the expected format."
+  (partition 2 (interleave coordinate-sets (repeat change))))
 
 ;; Working with letters on tiles
 
@@ -265,3 +277,28 @@ elsewhere."
      (coordinates-all-in-a-row? change-coordinates) (Exception. "Letters are non-contiguous")
      letters-connected (Exception. "Letters are disconnected")
      (empty? illegal-words-after-move) (Exception. "Not a word"))))
+
+(defn- update-tile-ownership [board changes player]
+  "We transfer ownership of all the tiles played by the player to the player
+  along with the immediate neighbours of all the tiles played."
+  (let [board-after-move (change-tile-values board changes)
+        coordinates-of-change (map first changes)
+        possibly-affected-coordinates (coordinates-of-neighborings board coordinates-of-change)
+        affected-neighbors (filter #(at board % :letter) possibly-affected-coordinates)
+        player-changes (changes-for-coordinates (concat coordinates-of-change affected-neighbors) {:player player})]
+    (change-tile-values board player-changes)))
+
+(defn player-score [board player]
+  (count (filter #(= (at board % :player) player) (all-tile-coordinates board))))
+
+(defn score-move [board changes player]
+  "We score a move by taking the difference between the number of tiles owned
+  by the player on the board prior to the move and the number of tiles that
+  would be owned after the move."
+  (let [board-after-move (update-tile-ownership board changes player)]
+   (- (player-score board-after-move player) (player-score board player))))
+
+(defn make-move [board changes player]
+  (possible-move? board changes) ;; throws exception if not possible
+  (let [board-with-updated-letter (change-tile-values board changes)]
+    (update-tile-ownership board-with-updated-letter changes player)))

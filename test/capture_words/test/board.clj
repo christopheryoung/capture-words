@@ -1,7 +1,6 @@
 
 (ns capture_words.test.board
   (:use [capture_words.board])
-  (:use [clojure.test])
   (:use [midje.sweet]))
 
 ;; Test set up and fixtures
@@ -45,6 +44,11 @@
   (just [[0 1] [1 0]] :in-any-order)
   (coordinates-of-neighboring aboard [4 4]) =>
   (just [[4 5] [5 4] [4 3] [3 4]] :in-any-order))
+
+(facts "Coordinates returns by coordinates-of-neighbours are correct and
+possible for the provided board"
+  (coordinates-of-neighborings aboard [[8 8] [8 9]]) =>
+  (just [8 8] [8 9] [8 7] [7 8] [7 9] [8 10] [9 9] [9 8] :in-any-order))
 
 (facts "neighbors? works properly"
   (neighbors? aboard [0 0] [0 1]) => true
@@ -129,3 +133,16 @@ already have letters"
                                    [[6 10] {:letter "B"}]
                                    [[7 10] {:letter "G"}]]]
     (possible-move? aboard bad-move-because-nonsense) => (throws Exception)))
+
+(fact "player-score returns the number of tiles owned by the player for a given board"
+  (player-score aboard :A) => 22)
+
+(fact "score-move returns the difference between the player's score after the
+move and the player's score before it."
+  (score-move aboard [[[3 10] {:letter "A"}]] :B) => 3)
+
+(facts "make-move applies the specified change to the board if it is legal"
+  (let [board-after-move (make-move aboard [[[3 10] {:letter "A"}]] :B)]
+    (at aboard [3 10] :letter) => nil
+    (at board-after-move [3 10] :letter) => "A"
+    (at board-after-move [3 10] :player) => :B))
