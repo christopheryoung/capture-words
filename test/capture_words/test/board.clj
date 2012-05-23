@@ -1,7 +1,12 @@
 
 (ns capture_words.test.board
+  (:use [midje.sweet])
   (:use [capture_words.board])
-  (:use [midje.sweet]))
+  (:use [sircyb-utils.core :only (exclusive-or
+                                  strictly-true-or-false?
+                                  in-coll?
+                                  all-same?
+                                  coll-of-successive-integers?)]))
 
 ;; Test set up and fixtures
 

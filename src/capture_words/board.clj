@@ -3,39 +3,14 @@
   (:use [clojure.math.numeric-tower :only (abs)])
   (:use [clojure.math.combinatorics :only (combinations)])
   (:use [clojure.set :only (intersection union difference)])
-  (:use [capture_words.word_utils :only (word?)]))
+  (:use [capture_words.word_utils :only (word?)])
+  (:use [sircyb-utils.core :only (exclusive-or
+                                  strictly-true-or-false?
+                                  in-coll?
+                                  all-same?
+                                  coll-of-successive-integers?)]))
 
-;; General utility (to be moved into separate library)
-
-;; logical relations
-
-(defn exclusive-or [x y]
-  (boolean (and (not (and x y))
-                (or x y))))
-
-(defn strictly-true-or-false? [exp]
-  (or (true? exp) (false? exp)))
-
-;; collections
-
-(defn in-coll? [coll elem]
-  "Takes a collection and an element and returns true if the element
-appears at least once in the collection"
-  (boolean (some #{elem} coll)))
-
-(defn all-same? [coll]
-  "Takes a collection and returns true if all the items in the
-collection are the same; false otherwise"
-  (= (count (set coll)) 1))
-
-(defn coll-of-successive-integers? [coll]
-  "Takes a non-empty collection of integers and returns true if the collection
-is a series of successive integers"
-  (let [start (first coll)
-        end (first (reverse coll))
-        length (count coll)
-        target-coll (range start (+ length start))]
-    (= coll target-coll)))
+;; General utilities
 
 (defn throw-if-false [status excp]
   (if-not (strictly-true-or-false? status)
@@ -57,7 +32,6 @@ neither strictly true or false."
       (throw-if-false status excp)
       (recur (nnext check-and-exception-pairs)))))
 
-
 ;; The board and its pieces . . .
 
 (defn tile []
@@ -73,6 +47,9 @@ neither strictly true or false."
   (let [board (vec (for [x (range board-length)]
                      (vec (take board-width (repeatedly tile-func)))))]
     (init-func board)))
+
+(defn initial-board []
+  (make-board))
 
 ;; Iterating through the board's coordinates
 
@@ -222,8 +199,7 @@ groupings of characters?"
         neighbor-coordinates (set (apply concat neighbor-coordinates-groups))
         neighbors-in-remaining (intersection (set remaining-letter-runs) neighbor-coordinates)
         new-collector (union collector neighbors-in-remaining)
-        new-remaining (difference remaining-letter-runs neighbors-in-remaining)
-        ]
+        new-remaining (difference remaining-letter-runs neighbors-in-remaining)]
     (cond
      (empty? remaining-letter-runs) true
      (empty? neighbors-in-remaining) false
@@ -271,7 +247,6 @@ elsewhere."
                            board-after-move
                            coordinates-of-all-letter-runs-after-move)
         ]
-
     (summarize-check-results
      (empty? overlapping-letters) (Exception. "Letters overlap")
      (coordinates-all-in-a-row? change-coordinates) (Exception. "Letters are non-contiguous")
@@ -302,3 +277,31 @@ elsewhere."
   (possible-move? board changes) ;; throws exception if not possible
   (let [board-with-updated-letter (change-tile-values board changes)]
     (update-tile-ownership board-with-updated-letter changes player)))
+
+(defn the-board-init [board]
+  (change-tile-values board [
+                             [[2 8] {:player :A :letter "C"}]
+                             [[2 9] {:player :A :letter "A"}]
+                             [[2 10] {:player :A :letter "T"}]
+                             [[3 4] {:player :A :letter "C"}]
+                             [[3 5] {:player :A :letter "A"}]
+                             [[3 6] {:player :A :letter "T"}]
+                             [[3 8] {:player :A :letter "A"}]
+                             [[4 4] {:player :A :letter "A"}]
+                             [[4 6] {:player :A :letter "O"}]
+                             [[4 7] {:player :A :letter "T"}]
+                             [[4 8] {:player :A :letter "T"}]
+                             [[4 9] {:player :A :letter "E"}]
+                             [[4 10] {:player :A :letter "R"}]
+                             [[5 4] {:player :A :letter "B"}]
+                             [[5 5] {:player :A :letter "O"}]
+                             [[5 6] {:player :A :letter "Y"}]
+                             [[6 3] {:player :A :letter "I"}]
+                             [[6 4] {:player :A :letter "S"}]
+                             [[7 4] {:player :A :letter "T"}]
+                             [[8 4] {:player :A :letter "A"}]
+                             [[9 4] {:player :A :letter "N"}]
+                             [[10 4] {:player :A :letter "D"}]
+                             ]))
+
+
