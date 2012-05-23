@@ -6,4 +6,5 @@
 pom.xml
 *jar
 /docs/
+/checkouts/
 /.lein-plugins/checksum
