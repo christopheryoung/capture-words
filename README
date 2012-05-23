@@ -4,7 +4,7 @@ A simple demo word game
 
 ## Usage
 
-To build:
+To setup a dev environment:
 
 git clone http://git.chrisyoung.net/capture_words.git
 cd capture_words
