@@ -1,7 +1,7 @@
 
 #Quick and dirty script for setting up our project
 
-CAPTURE_WORDS_DIR=`dirname "$0"`
+CAPTURE_WORDS_DIR=`( cd "$MY_PATH" && pwd )`
 PROJECTS_DIR=`( cd .. && pwd )`
 SIRCYB_UTILS=$PROJECTS_DIR/sircyb-utils
 CHECKOUTS=$CAPTURE_WORDS_DIR/checkouts
@@ -38,7 +38,8 @@ else
     echo "sircyb-utils already linked"
 fi
 
-cd $CAPTURE_WORDS_DIR
+
 lein deps
+lein eastwood
 lein midje
 
