@@ -6,9 +6,9 @@ A simple demo word game
 
 To build:
 
-1. Clone capture_words repo
-2. run ./build.sh
-3. Profit.
+git clone http://git.chrisyoung.net/capture_words.git
+cd capture_words
+./build.sh
 
 To run tests:
 
