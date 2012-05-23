@@ -1,5 +1,10 @@
 
-#Quick and dirty script for setting up our project
+#Quick and dirty script for setting up our project for developing
+#Checks out our other dependencies and symlinks to them for easy hacking on
+#multiple projects.
+
+#This script is for dev purposes only, and not for prod deploys
+
 
 CAPTURE_WORDS_DIR=`( cd "$MY_PATH" && pwd )`
 PROJECTS_DIR=`( cd .. && pwd )`
