@@ -39,4 +39,5 @@ else
 fi
 
 lein deps
+lein midje 
 
