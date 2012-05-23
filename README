@@ -1,13 +1,21 @@
 # capture_words
 
-FIXME: write description
+A simple demo word game
 
 ## Usage
 
-FIXME: write
+To build:
+
+1. Clone capture_words repo
+2. run ./build.sh
+3. Profit.
+
+To run tests:
+
+lein midje
 
 ## License
 
-Copyright (C) 2012 FIXME
+Copyright (C) 2012 SirCyb Inc., All Rights Reserved
 
 Distributed under the Eclipse Public License, the same as Clojure.
