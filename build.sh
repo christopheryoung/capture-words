@@ -38,6 +38,7 @@ else
     echo "sircyb-utils already linked"
 fi
 
+cd $CAPTURE_WORDS_DIR
 lein deps
-lein midje 
+lein midje
 
