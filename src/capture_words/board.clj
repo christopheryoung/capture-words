@@ -20,12 +20,13 @@
   (if-not status
     (throw excp)))
 
-(defn summarize-check-results [ & check-and-exception-pairs]
+(defn summarize-check-results
   "Takes alternating checks and exceptions, where the check is the condition to
 be tested which evaluates to either true or false and the exception is what is
 returned in the case that the check returns false. Only throws the first
 exception encountered. Throws exception if any of the checks evaluate to
 neither strictly true or false."
+  [ & check-and-exception-pairs]
   (if (seq check-and-exception-pairs)
     (let [status (first check-and-exception-pairs)
           excp (second check-and-exception-pairs)]
@@ -38,12 +39,13 @@ neither strictly true or false."
   {:player nil
    :letter nil})
 
-(defn make-board [ & {:keys [board-length board-width init-func tile-func]
-                      :or {board-length 15
-                           board-width 15
-                           init-func identity
-                           tile-func tile}}]
+(defn make-board
   "Returns a board using provided funcs"
+  [ & {:keys [board-length board-width init-func tile-func]
+       :or {board-length 15
+            board-width 15
+            init-func identity
+            tile-func tile}}]
   (let [board (vec (for [x (range board-length)]
                      (vec (take board-width (repeatedly tile-func)))))]
     (init-func board)))
@@ -53,8 +55,9 @@ neither strictly true or false."
 
 ;; Iterating through the board's coordinates
 
-(defn all-tile-coordinates [board]
+(defn all-tile-coordinates
   "A flattened list of tile coordinates"
+  [board]
   (for [length-wise (range (count board))
         width-wise (range (count (first board)))]
     (vector length-wise width-wise)))
@@ -94,23 +97,26 @@ neither strictly true or false."
 (defn legal-coordinate [board coordinates]
   (or (get-in board coordinates) false))
 
-(defn coordinates-of-neighboring [board coordinates]
+(defn coordinates-of-neighboring
   "Takes a board and a set of coordinates and returns all legal
 neighbors for those coordinates on the given board."
+  [board coordinates]
   (filter #(legal-coordinate board %) [(coord-above coordinates)
                                        (coord-right-of coordinates)
                                        (coord-below coordinates)
                                        (coord-left-of coordinates)]))
 
-(defn coordinates-of-neighborings [board coordinates-vec]
+(defn coordinates-of-neighborings
   "Takes a vector of coordinates and gives all the legal neighbors, including
 the original coordinates"
+  [board coordinates-vec]
   (let [neighbors-for-each (map (partial coordinates-of-neighboring board) coordinates-vec)]
     (reduce concat [] neighbors-for-each)))
 
-(defn neighbors? [board pair1 pair2]
+(defn neighbors?
   "Takes a board and two coordinate pairs and returns true or false
 depending on whether the coordinate pairs are neighbors on the board."
+  [board pair1 pair2]
   (in-coll? (coordinates-of-neighboring board pair2) pair1))
 
 (defn coordinates-all-in-a-row? [coordinates-vec]
@@ -121,9 +127,10 @@ depending on whether the coordinate pairs are neighbors on the board."
 
 ;; "Changing" tile values
 
-(defn change-tile-value [board [coordinates updates]]
+(defn change-tile-value
   "Returns a new board featuring the updates to the tile at the given
 coordinates."
+  [board [coordinates updates]]
   (let [old-tile (at board coordinates)
         new-tile (merge old-tile updates)]
     (assoc-in board coordinates new-tile)))
@@ -131,10 +138,11 @@ coordinates."
 (defn change-tile-values [board changes]
   (reduce change-tile-value board changes))
 
-(defn- changes-for-coordinates [coordinate-sets change]
+(defn- changes-for-coordinates
   "change-tile-value expects a sequence of coordinates and updates. This helper
   method takes a set of such coordinates and a single change and returns the
   changes in the expected format."
+  [coordinate-sets change]
   (partition 2 (interleave coordinate-sets (repeat change))))
 
 ;; Working with letters on tiles
@@ -154,7 +162,7 @@ coordinates."
 ;; usage: (vertical-word-starting board coordinates)
 (def vertical-word-starting (word-starting to-the-bottom-from))
 
-(defn letter-runs-from-coordinates [board coordinates]
+(defn letter-runs-from-coordinates
   "Returns a vector of letter-runs (possible words) coordinates pairs
   for those letter-runs. To avoid double counting, when we find a
   letter, we check if it has a letter to its left. If it doesn't, we
@@ -162,6 +170,7 @@ coordinates."
   already been counted horizontally. We also check if it has a letter
   above it. If it does, it has already been counted vertically. If it
   doesn't, we add the row of letters below it, if any."
+  [board coordinates]
   (concat []
          (if (and
               (at board coordinates :letter)
@@ -177,24 +186,27 @@ coordinates."
            (vertical-word-starting board coordinates)
            [])))
 
-(defn all-letter-runs-on-board [board]
+(defn all-letter-runs-on-board
   "Returns seq of pairs of word candidates/coordinates vectors on the
   board. We're looking for all the ways we can make possibly legal
   words out of the combination of letters on the board. We do this by
   scanning the board from left to right and top to bottom and asking
   of each tile whether it has any elligible letter runs. "
+  [board]
   (let [coordinates-to-search (all-tile-coordinates board)
         all-letter-runs (mapcat #(letter-runs-from-coordinates board %) coordinates-to-search)]
     (filter #(not (empty? %)) all-letter-runs)))
 
-(defn illegal-words-on-board [board]
+(defn illegal-words-on-board
   "Does the given board consist entirely of words (or are there illegal
 groupings of characters?"
+  [board]
   (let [candidates (map first (all-letter-runs-on-board board))]
     (filter #(not (word? %)) candidates)))
 
-(defn- all-letters-connected-recur? [board collector remaining-letter-runs]
+(defn- all-letters-connected-recur?
   "Recursive function used internally by all-letters-connected."
+  [board collector remaining-letter-runs]
   (let [neighbor-coordinates-groups (map #(coordinates-of-neighboring board %) collector)
         neighbor-coordinates (set (apply concat neighbor-coordinates-groups))
         neighbors-in-remaining (intersection (set remaining-letter-runs) neighbor-coordinates)
@@ -205,13 +217,14 @@ groupings of characters?"
      (empty? neighbors-in-remaining) false
      :else (all-letters-connected-recur? board new-collector new-remaining))))
 
-(defn all-letters-connected? [board coordinates]
+(defn all-letters-connected?
   "Takes a set of coordinates and returns true if they're all connected."
+  [board coordinates]
   (let [collector (set (first coordinates))
         remaining (set (apply concat (rest coordinates)))]
     (all-letters-connected-recur? board collector remaining)))
 
-(defn possible-move? [board changes]
+(defn possible-move?
   "Takes a board and proposed changes, which are a list of
  coordinate/attributes pairs. Returns nil on success or throws an Exception if
  the move is illegal:
@@ -234,6 +247,7 @@ the player is submitting a move on her own behalf; iii) that the
 changes are possible for the player, i.e., that she actually has the
 letters available to her to play on the board. These checks are done
 elsewhere."
+  [board changes]
   (let [change-coordinates (map first changes)
         coordinates-of-letters-already-on-board (filter #(at board % :letter) (all-tile-coordinates board))
         overlapping-letters (intersection
@@ -253,9 +267,10 @@ elsewhere."
      letters-connected (Exception. "Letters are disconnected")
      (empty? illegal-words-after-move) (Exception. "Not a word"))))
 
-(defn- update-tile-ownership [board changes player]
+(defn- update-tile-ownership
   "We transfer ownership of all the tiles played by the player to the player
   along with the immediate neighbours of all the tiles played."
+  [board changes player]
   (let [board-after-move (change-tile-values board changes)
         coordinates-of-change (map first changes)
         possibly-affected-coordinates (coordinates-of-neighborings board coordinates-of-change)
@@ -266,10 +281,11 @@ elsewhere."
 (defn player-score [board player]
   (count (filter #(= (at board % :player) player) (all-tile-coordinates board))))
 
-(defn score-move [board changes player]
+(defn score-move
   "We score a move by taking the difference between the number of tiles owned
   by the player on the board prior to the move and the number of tiles that
   would be owned after the move."
+  [board changes player]
   (let [board-after-move (update-tile-ownership board changes player)]
    (- (player-score board-after-move player) (player-score board player))))
 
