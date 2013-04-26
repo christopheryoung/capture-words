@@ -1,21 +1,13 @@
 # capture_words
 
-A simple demo word game
+A simple word game I'm in the process of building
 
-## Usage
-
-To setup a dev environment:
-
-git clone http://git.chrisyoung.net/capture_words.git
-cd capture_words
-./build.sh
+# Tests
 
 To run tests:
 
 lein midje
 
 ## License
-
-Copyright (C) 2012 SirCyb Inc., All Rights Reserved
 
 Distributed under the Eclipse Public License, the same as Clojure.
