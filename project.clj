@@ -4,8 +4,9 @@
                  [org.clojure/math.combinatorics "0.0.2"]
                  [lein-ring "0.7.0"]
                  [ring "1.1.0"]
-                 [sircyb-utils "0.1.0-SNAPSHOT"]]
-  :profiles {:dev {:dependencies [[midje "1.4.0-RC1"]]}}
+                 [sircyb-utils "0.1.0-SNAPSHOT"]
+                 [lionel "0.1.0-SNAPSHOT"]]
+  :profiles {:dev {:dependencies [[midje "1.4.0"]]}}
   :min-lein-version "2.0.0"
   :repositories {"local" ~(str (.toURI (java.io.File. "maven_repo")))}
   :description "A simple word game.")
