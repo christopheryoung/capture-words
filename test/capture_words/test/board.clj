@@ -2,11 +2,11 @@
 (ns capture_words.test.board
   (:use [midje.sweet])
   (:use [capture_words.board])
-  (:use [sircyb-utils.core :only (exclusive-or
-                                  strictly-true-or-false?
-                                  in-coll?
-                                  all-same?
-                                  coll-of-successive-integers?)]))
+  (:use [capture_words.utils :only (exclusive-or
+                                    strictly-true-or-false?
+                                    in-coll?
+                                    all-same?
+                                    coll-of-successive-integers?)]))
 
 ;; Test set up and fixtures
 
@@ -71,11 +71,11 @@ with the new value in the correct place"
     (at changed-board [1 1] :player) => :test-passer))
 
 (facts "We can 'change' multiple tile values at once"
-(let [changes [[[1 1] {:player :other-test-passer}]
-               [[3 4] {:letter "Z"}]]
-      changed-board (change-tile-values aboard changes)]
-  (at changed-board [1 1] :player) => :other-test-passer
-  (at changed-board [3 4] :letter) => "Z"))
+  (let [changes [[[1 1] {:player :other-test-passer}]
+                 [[3 4] {:letter "Z"}]]
+        changed-board (change-tile-values aboard changes)]
+    (at changed-board [1 1] :player) => :other-test-passer
+    (at changed-board [3 4] :letter) => "Z"))
 
 (fact "We can get a coll of all the coordinates on a board in order"
   (count (all-tile-coordinates aboard)) => 225)

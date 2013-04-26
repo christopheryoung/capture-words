@@ -4,11 +4,11 @@
   (:use [clojure.math.combinatorics :only (combinations)])
   (:use [clojure.set :only (intersection union difference)])
   (:use [capture_words.word_utils :only (word?)])
-  (:use [sircyb-utils.core :only (exclusive-or
-                                  strictly-true-or-false?
-                                  in-coll?
-                                  all-same?
-                                  coll-of-successive-integers?)]))
+  (:use [capture_words.utils :only (exclusive-or
+                                    strictly-true-or-false?
+                                    in-coll?
+                                    all-same?
+                                    coll-of-successive-integers?)]))
 
 ;; General utilities
 
@@ -172,19 +172,19 @@ coordinates."
   doesn't, we add the row of letters below it, if any."
   [board coordinates]
   (concat []
-         (if (and
-              (at board coordinates :letter)
-              (not (left-of board coordinates :letter))
-              (right-of board coordinates :letter))
-           (horizontal-word-starting board coordinates)
-           [])
+          (if (and
+               (at board coordinates :letter)
+               (not (left-of board coordinates :letter))
+               (right-of board coordinates :letter))
+            (horizontal-word-starting board coordinates)
+            [])
 
-         (if (and
-              (at board coordinates :letter)
-              (not (above board coordinates :letter))
-              (below board coordinates :letter))
-           (vertical-word-starting board coordinates)
-           [])))
+          (if (and
+               (at board coordinates :letter)
+               (not (above board coordinates :letter))
+               (below board coordinates :letter))
+            (vertical-word-starting board coordinates)
+            [])))
 
 (defn all-letter-runs-on-board
   "Returns seq of pairs of word candidates/coordinates vectors on the
@@ -287,7 +287,7 @@ elsewhere."
   would be owned after the move."
   [board changes player]
   (let [board-after-move (update-tile-ownership board changes player)]
-   (- (player-score board-after-move player) (player-score board player))))
+    (- (player-score board-after-move player) (player-score board player))))
 
 (defn make-move [board changes player]
   (possible-move? board changes) ;; throws exception if not possible
@@ -319,5 +319,3 @@ elsewhere."
                              [[9 4] {:player :A :letter "N"}]
                              [[10 4] {:player :A :letter "D"}]
                              ]))
-
-
